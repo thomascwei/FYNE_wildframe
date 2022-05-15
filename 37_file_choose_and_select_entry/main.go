@@ -77,9 +77,7 @@ func main() {
 			} else {
 				label3.Text = label1.Text + "\n" + label2.Text + "\n" + "GO!!!\n"
 				label3.Refresh()
-				// Clear all scheduled jobs
-				label4.Text = fmt.Sprintf("Send count : 0")
-				label4.Refresh()
+
 				if len(CronSchedule.Jobs()) == 0 {
 					label4.Text = fmt.Sprintf("Send count : %d", SendCount)
 					label4.Refresh()
