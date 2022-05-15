@@ -9,24 +9,26 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/jasonlvhit/gocron"
+	"github.com/go-co-op/gocron"
 	"sync/atomic"
+	"time"
 )
 
 var SendCount int32 = 0
 
-func taskWithParams(Label4 *widget.Label, File, SelectEntry string) {
+func taskWithParams(label4 *widget.Label, File, SelectEntry string) {
 	atomic.AddInt32(&SendCount, 1)
 	fmt.Printf("I am running %s %s. Send count : %d.\n", File, SelectEntry, SendCount)
 	if SendCount%10 == 0 {
-		Label4.Text = fmt.Sprintf("Send count : %d", SendCount)
-		Label4.Refresh()
+		label4.Text = fmt.Sprintf("Send count : %d", SendCount)
+		label4.Refresh()
 	}
 }
 
 func main() {
 	var DataType string
 	var FilePath string
+	var CronSchedule = gocron.NewScheduler(time.Local)
 
 	// New app
 	a := app.New()
@@ -47,8 +49,6 @@ func main() {
 			label1.Text = fmt.Sprintf("data type : %s", s)
 			label1.Refresh()
 		})
-	// more than one widget. so use container
-	//butOuter:=widget.NewToolbarSeparator()
 
 	btn1 := widget.NewButtonWithIcon("click to choose a file", theme.FileTextIcon(), func() {
 		dialog.ShowFileOpen(
@@ -75,29 +75,41 @@ func main() {
 				label3.Text = "File Error"
 				label3.Refresh()
 			} else {
-				label3.Text = "GO!!! " + label1.Text + " " + label2.Text
+				label3.Text = label1.Text + "\n" + label2.Text + "\n" + "GO!!!\n"
 				label3.Refresh()
 				// Clear all scheduled jobs
 				label4.Text = fmt.Sprintf("Send count : 0")
 				label4.Refresh()
-				gocron.Clear()
-				atomic.StoreInt32(&SendCount, 0)
-				err := gocron.Every(1).Second().Do(taskWithParams, label4, FilePath, DataType)
-				if err != nil {
-					panic(err)
+				if len(CronSchedule.Jobs()) == 0 {
+					label4.Text = fmt.Sprintf("Send count : %d", SendCount)
+					label4.Refresh()
+					_, err := CronSchedule.CronWithSeconds("*/1 50-59,00-09 * * * *").Do(taskWithParams, label4, FilePath, DataType)
+					if err != nil {
+						panic(err)
+					}
+					_, err = CronSchedule.CronWithSeconds("3 49 * * * *").Do(taskWithParams, label4, FilePath, DataType)
+					if err != nil {
+						panic(err)
+					}
+					CronSchedule.StartAsync()
 				}
-				// Start all the pending jobs
-				go func() {
-					<-gocron.Start()
-				}()
+
 			}
 		}),
 		//widget.NewToolbarSpacer(),
+		widget.NewToolbarAction(theme.MediaPauseIcon(), func() {
+			label3.Text = "PAUSE"
+			label3.Refresh()
+			label4.Text = fmt.Sprintf("Send count : %d", SendCount)
+			label4.Refresh()
+			CronSchedule.Clear()
+		}),
 		widget.NewToolbarAction(theme.MediaStopIcon(), func() {
 			label3.Text = "STOP!!!"
 			label3.Refresh()
-			fmt.Println(label3.Text)
-			gocron.Clear()
+			label4.Text = fmt.Sprintf("Send count : %d", SendCount)
+			label4.Refresh()
+			CronSchedule.Clear()
 			atomic.StoreInt32(&SendCount, 0)
 		}),
 		widget.NewToolbarSpacer(),
