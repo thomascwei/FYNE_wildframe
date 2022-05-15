@@ -1,7 +1,6 @@
 # FYNE
 
 > 把學習過程中做出的layout記錄下來方便查詢
->
 
 ## 01_first_ cry
 
@@ -146,3 +145,8 @@
 ## 36_note_pad
 
 ![](pictures/36_note_pad.JPG)
+
+## 37_file_choose_and_select_entry
+
+![](pictures/37.PNG)
+
