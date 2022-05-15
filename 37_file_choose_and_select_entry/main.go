@@ -48,8 +48,9 @@ func main() {
 			label1.Refresh()
 		})
 	// more than one widget. so use container
+	//butOuter:=widget.NewToolbarSeparator()
 
-	btn1 := widget.NewButton("click to choose a file", func() {
+	btn1 := widget.NewButtonWithIcon("click to choose a file", theme.FileTextIcon(), func() {
 		dialog.ShowFileOpen(
 			func(r fyne.URIReadCloser, _ error) {
 				fmt.Println(r.URI().Path())
